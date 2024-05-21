@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, shrink-to-fit=no"
+		/>
+		<title>{% block title %}Boredom Buster{% endblock %}</title>
+		<!-- Bootstrap CSS -->
+		{{ bootstrap.load_css() }}
+		{% block css %}{% endblock %}
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<a class="navbar-brand" href="{{ url_for('main.index') }}">Boredom Buster</a>
+			<div class="collapse navbar-collapse">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+					</li>
+					{% if current_user.is_authenticated %}
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('main.favorites') }}">Favorites</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('main.logout') }}">Logout</a>
+					</li>
+					{% else %}
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
+					</li>
+					{% endif %}
+				</ul>
+			</div>
+		</nav>
+		<div class="container">{% block content %}{% endblock %}</div>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<!-- Bootstrap core JS-->
+		{{ bootstrap.load_js() }}
+		{% block scripts %}{% endblock %}
+	</body>
+</html>

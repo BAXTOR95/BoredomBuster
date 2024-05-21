@@ -1,0 +1,83 @@
+<!-- extends from base -->
+{% extends "base.html" %}
+<!-- Title -->
+{% block title %}Home{% endblock %}
+<!-- Content -->
+{% block content %}
+<h1>Boredom Buster</h1>
+<form id="filter-form" method="post">
+	{{ form.hidden_tag() }}
+	<div class="form-group">
+		{{ form.type.label }} {{ form.type(class_="form-control") }}
+	</div>
+	<div class="form-group">
+		{{ form.participants.label }} {{ form.participants(class_="form-control") }}
+	</div>
+	<div class="form-group">{{ form.submit(class_="btn btn-primary") }}</div>
+</form>
+
+<div id="activity-container" style="display: none">
+	<h2>Suggested Activity</h2>
+	<p id="activity-description"></p>
+	<p>Type: <span id="activity-type"></span></p>
+	<p>Participants: <span id="activity-participants"></span></p>
+	<button id="save-activity" class="btn btn-success">Save Activity</button>
+</div>
+
+<div id="error-container" style="display: none">
+	<h2>No Activity Found</h2>
+	<p>
+		Sorry, we couldn't find any activity with the specified parameters. Please
+		try different options.
+	</p>
+</div>
+{% endblock %}
+<!-- Scripts -->
+{% block scripts %}
+<script>
+	$(document).ready(function() {
+	    $('#filter-form').on('submit', function(event) {
+	        event.preventDefault();
+	        var formData = $(this).serialize();
+	        $.ajax({
+	            url: '{{ url_for('main.index') }}',
+	            type: 'POST',
+	            data: formData,
+	            success: function(response) {
+	                if (response.activity) {
+	                    $('#activity-container').show();
+	                    $('#error-container').hide();
+	                    $('#activity-description').text(response.activity.activity);
+	                    $('#activity-type').text(response.activity.type);
+	                    $('#activity-participants').text(response.activity.participants);
+	                    $('#save-activity').data('activity', response.activity);
+	                } else {
+	                    $('#activity-container').hide();
+	                    $('#error-container').show();
+	                }
+	            },
+	            error: function() {
+	                $('#activity-container').hide();
+	                $('#error-container').show();
+	            }
+	        });
+	    });
+
+	    $('#save-activity').on('click', function() {
+	        var activity = $(this).data('activity');
+	        $.post({
+	            url: '{{ url_for('main.save_activity') }}',
+	            contentType: 'application/json',
+	            data: JSON.stringify({
+	                description: activity.activity,
+	                type: activity.type,
+	                participants: activity.participants
+	            }),
+	            success: function(response) {
+	                alert('Activity saved successfully!');
+	            }
+	        });
+	    });
+	});
+</script>
+{% endblock %}
