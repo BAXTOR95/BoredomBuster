@@ -2,6 +2,10 @@
 
 Boredom Buster is a web application that helps users find fun and engaging activities when they're feeling bored. The application fetches random activities from the Bored API and retrieves related images from the Unsplash API.
 
+## Live Version
+
+A live version of Boredom Buster is available at the following link: [https://boredombuster.onrender.com](https://boredombuster.onrender.com).
+
 ## Features
 
 - **Random Activity Generator**: Users can click a button to get a random activity suggestion.
