@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
+from datetime import datetime, UTC
 from . import db
 from .models import User, Activity
 from .forms import LoginForm, RegistrationForm, FilterForm
@@ -34,6 +35,8 @@ def login():
             flash('Invalid email or password')
             return redirect(url_for('main.login'))
         login_user(user, remember=form.remember_me.data)
+        user.last_login = datetime.now(UTC)
+        db.session.commit()
         return redirect(url_for('main.index'))
     return render_template('login.html', title='Sign In', form=form)
 
@@ -52,6 +55,7 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
+        user.last_login = None  # Set last_login to None during registration
         db.session.add(user)
         db.session.commit()
         flash('Congratulations, you are now a registered user!')
@@ -63,7 +67,7 @@ def register():
 @login_required
 def favorites():
     user = User.query.get(current_user.id)
-    activities = user.activities.all()
+    activities = user.activities  # Directly use the list of activities
     return render_template('favorites.html', title='Favorites', activities=activities)
 
 
@@ -71,12 +75,29 @@ def favorites():
 @login_required
 def save_activity():
     data = request.json
-    activity = Activity(
-        description=data['description'],
-        type=data['type'],
-        participants=data['participants'],
-        user_id=current_user.id,
-    )
-    db.session.add(activity)
-    db.session.commit()
-    return jsonify(status='success')
+    if not data:
+        return jsonify(status='error', message='Invalid request format'), 400
+    try:
+        activity = Activity(
+            description=data['description'],
+            type=data['type'],
+            participants=data['participants'],
+            user_id=current_user.id,
+        )
+        db.session.add(activity)
+        db.session.commit()
+        return jsonify(status='success')
+    except Exception as e:
+        return jsonify(status='error', message=str(e)), 400
+
+
+@main_bp.route('/remove_activity', methods=['POST'])
+@login_required
+def remove_activity():
+    data = request.json
+    activity = Activity.query.get(data['id'])
+    if activity and activity.user_id == current_user.id:
+        db.session.delete(activity)
+        db.session.commit()
+        return jsonify(status='success')
+    return jsonify(status='error')

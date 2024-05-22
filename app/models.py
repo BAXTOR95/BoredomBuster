@@ -24,7 +24,7 @@ class User(UserMixin, db.Model):
     email: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(128))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_login: Mapped[DateTime] = mapped_column(DateTime)
+    last_login: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
 
     # Relationships
     activities: Mapped[list["Activity"]] = relationship(

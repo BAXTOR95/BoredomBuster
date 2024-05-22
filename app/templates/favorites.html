@@ -1,0 +1,59 @@
+<!-- extends from base -->
+{% extends "base.html" %}
+<!-- Title -->
+{% block title %}Favorites{% endblock %}
+<!-- Content -->
+{% block content %}
+<div class="container">
+	<h2>Your Favorite Activities</h2>
+	{% if activities %}
+	<ul class="list-group">
+		{% for activity in activities %}
+		<li
+			class="list-group-item d-flex justify-content-between align-items-center"
+		>
+			<div>
+				<h5>{{ activity.description }}</h5>
+				<p>Type: {{ activity.type }}</p>
+				<p>Participants: {{ activity.participants }}</p>
+			</div>
+			<button
+				class="btn btn-danger remove-activity"
+				data-id="{{ activity.id }}"
+			>
+				Remove
+			</button>
+		</li>
+		{% endfor %}
+	</ul>
+	{% else %}
+	<p>You have no saved favorite activities.</p>
+	{% endif %}
+</div>
+{% endblock %}
+<!-- Scripts -->
+{% block scripts %}
+<script>
+	$(document).ready(function () {
+		$('.remove-activity').on('click', function () {
+			var activityId = $(this).data('id');
+			$.ajax({
+				url: '{{ url_for("main.remove_activity") }}',
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify({ id: activityId }),
+                headers: {
+                    'X-CSRFToken': "{{ csrf_token() }}"  // Include the CSRF token as a header
+                },
+				success: function (response) {
+					if (response.status === 'success') {
+						location.reload();
+					} else {
+						alert('Error removing activity');
+					}
+				},
+			});
+		});
+	});
+</script>
+{% endblock %}
