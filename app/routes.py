@@ -15,10 +15,12 @@ def index():
     form = FilterForm()
     if form.validate_on_submit():
         try:
-            activity = fetch_random_activity(form.type.data, form.participants.data)
+            result = fetch_random_activity(form.type.data, form.participants.data)
+            activity = result['activity']
             if 'error' in activity:
                 return jsonify({'error': activity['error']})
-            return jsonify({'activity': activity})
+            image_url = result['image_url']
+            return jsonify({'activity': activity, 'image_url': image_url})
         except Exception as e:
             return jsonify({'error': str(e)})
     return render_template('home.html', title='Home', form=form)
@@ -54,6 +56,11 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
+        password = form.password.data
+        password2 = form.password2.data
+        if password != password2:
+            flash("Passwords do not match")
+            return redirect(url_for("main.register"))
         user.set_password(form.password.data)
         user.last_login = None  # Set last_login to None during registration
         db.session.add(user)

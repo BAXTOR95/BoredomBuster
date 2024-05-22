@@ -4,88 +4,148 @@
 {% block title %}Home{% endblock %}
 <!-- Content -->
 {% block content %}
-<h1>Boredom Buster</h1>
-<form id="filter-form" method="post">
-	{{ form.hidden_tag() }}
-	<div class="form-group">
-		{{ form.type.label }} {{ form.type(class_="form-control") }}
-	</div>
-	<div class="form-group">
-		{{ form.participants.label }} {{ form.participants(class_="form-control") }}
-	</div>
-	<div class="form-group">{{ form.submit(class_="btn btn-primary") }}</div>
-</form>
+<div class="container mt-5">
+	<h1 class="text-center mb-4">Boredom Buster</h1>
+	<form
+		id="filter-form"
+		method="post"
+		class="row g-3 justify-content-center mb-5"
+	>
+		{{ form.hidden_tag() }}
+		<div class="col-md-4">
+			{{ form.type.label(class="form-label") }} {{
+			form.type(class_="form-control shadow-sm") }}
+		</div>
+		<div class="col-md-4">
+			{{ form.participants.label(class="form-label") }} {{
+			form.participants(class_="form-control shadow-sm") }}
+		</div>
+		<div class="col-md-2 d-grid">
+			<button type="submit" class="btn btn-primary mt-4 shadow-sm">
+				<i class="bi bi-search"></i> {{ form.submit.label.text }}
+			</button>
+		</div>
+	</form>
 
-<div id="activity-container" style="display: none">
-	<h2>Suggested Activity</h2>
-	<p id="activity-description"></p>
-	<p>Type: <span id="activity-type"></span></p>
-	<p>Participants: <span id="activity-participants"></span></p>
-	<button id="save-activity" class="btn btn-success">Save Activity</button>
-</div>
+	<h2 id="activity-title" class="mb-4" style="display: none">
+		Suggested Activity
+	</h2>
+	<div
+		id="activity-container"
+		class="card mb-5 shadow-sm"
+		style="display: none"
+	>
+		<div class="row g-0 h-100">
+			<div class="col-md-4 d-flex align-items-center">
+				<img
+					src="https://via.placeholder.com/450x300.png?text=Activity+Image"
+					class="img-fluid rounded-start"
+					alt="Activity Image"
+					id="activity-image"
+				/>
+			</div>
+			<div class="col-md-8 d-flex flex-column justify-content-center">
+				<div
+					class="card-body d-flex flex-column align-items-center justify-content-center"
+				>
+					<h3 class="card-title" id="activity-description"></h3>
+					<div class="mb-2">
+						<span class="badge bg-primary"
+							><i class="bi bi-activity"></i>
+							<span id="activity-type-badge"></span
+						></span>
+						<span class="badge bg-secondary"
+							><i class="bi bi-people-fill"></i>
+							<span id="activity-participants-badge"></span
+						></span>
+					</div>
+				</div>
+				{% if current_user.is_authenticated %}
+				<div class="text-end p-3 mt-auto">
+					<button id="save-activity" class="btn btn-success shadow-sm">
+						<i class="bi bi-floppy"></i> Save Activity
+					</button>
+				</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
 
-<div id="error-container" style="display: none">
-	<h2>No Activity Found</h2>
-	<p>
-		Sorry, we couldn't find any activity with the specified parameters. Please
-		try different options.
-	</p>
+	<div
+		id="error-container"
+		class="alert alert-danger shadow-sm"
+		style="display: none"
+	>
+		<h4 class="alert-heading">No Activity Found</h4>
+		<p>
+			Sorry, we couldn't find any activity with the specified parameters. Please
+			try different options.
+		</p>
+	</div>
 </div>
 {% endblock %}
 <!-- Scripts -->
 {% block scripts %}
 <script>
 	$(document).ready(function() {
-		$('#filter-form').on('submit', function(event) {
-			event.preventDefault();
-			var formData = $(this).serialize();
-			$.ajax({
-				url: '{{ url_for('main.index') }}',
-				type: 'POST',
-				data: formData,
-				success: function(response) {
-					if (response.activity) {
-						$('#activity-container').show();
-						$('#error-container').hide();
-						$('#activity-description').text(response.activity.activity);
-						$('#activity-type').text(response.activity.type);
-						$('#activity-participants').text(response.activity.participants);
-						$('#save-activity').data('activity', response.activity);
-					} else {
-						$('#activity-container').hide();
-						$('#error-container').show();
-					}
-				},
-				error: function() {
-					$('#activity-container').hide();
-					$('#error-container').show();
-				}
-			});
-		});
+	    $('#filter-form').on('submit', function(event) {
+	        event.preventDefault();
+	        var formData = $(this).serialize();
+	        $.ajax({
+	            url: '{{ url_for('main.index') }}',
+	            type: 'POST',
+	            data: formData,
+	            success: function(response) {
+	                if (response.activity) {
+	                    $('#activity-title').fadeIn();
+	                    $('#activity-container').fadeIn();
+	                    $('#error-container').hide();
+	                    $('#activity-description').text(response.activity.activity);
+	                    $('#activity-type-badge').text(response.activity.type.charAt(0).toUpperCase() + response.activity.type.slice(1));
+	                    $('#activity-participants-badge').text(response.activity.participants + ' Participants');
+	                    $('#save-activity').data('activity', response.activity);
 
-		$('#save-activity').on('click', function() {
-			// Get the activity data from the button's data attribute
-			var activity = $(this).data('activity');
-			$.ajax({
-				url: '{{ url_for('main.save_activity') }}',
-				type: 'POST',
-				contentType: 'application/json',
-				data: JSON.stringify({
-					description: activity.activity,
-					type: activity.type,
-					participants: activity.participants
-				}),
-				headers: {
-					'X-CSRFToken': "{{ csrf_token() }}"
-				},
-				success: function(response) {
-					alert('Activity saved successfully!');
-				},
-				error: function(response) {
-					alert('Error saving activity: ' + response.statusText);
-				}
-			});
-		});
+	                    if (response.image_url) {
+							$('#activity-image').attr('src', response.image_url).show();
+						} else {
+							$('#activity-image').hide();
+						};
+	                } else {
+	                    $('#activity-title').hide();
+	                    $('#activity-container').hide();
+	                    $('#error-container').fadeIn();
+	                }
+	            },
+	            error: function() {
+	                $('#activity-title').hide();
+	                $('#activity-container').hide();
+	                $('#error-container').fadeIn();
+	            }
+	        });
+	    });
+
+	    $('#save-activity').on('click', function() {
+	        var activity = $(this).data('activity');
+	        $.ajax({
+	            url: '{{ url_for('main.save_activity') }}',
+	            type: 'POST',
+	            contentType: 'application/json',
+	            data: JSON.stringify({
+	                description: activity.activity,
+	                type: activity.type,
+	                participants: activity.participants
+	            }),
+	            headers: {
+	                'X-CSRFToken': "{{ csrf_token() }}"
+	            },
+	            success: function(response) {
+	                alert('Activity saved successfully!');
+	            },
+	            error: function(response) {
+	                alert('Error saving activity: ' + response.statusText);
+	            }
+	        });
+	    });
 	});
 </script>
 {% endblock %}

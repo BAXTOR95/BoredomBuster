@@ -44,4 +44,4 @@ class FilterForm(FlaskForm):
         ],
     )
     participants = IntegerField('Participants', default=1)
-    submit = SubmitField('Filter')
+    submit = SubmitField('Get Activity')

@@ -6,41 +6,72 @@
 			name="viewport"
 			content="width=device-width, initial-scale=1, shrink-to-fit=no"
 		/>
+		<!-- Title -->
 		<title>{% block title %}Boredom Buster{% endblock %}</title>
 		<!-- Bootstrap CSS -->
 		{{ bootstrap.load_css() }}
+		<!-- Bootstrap Icons -->
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+		/>
+		<!-- Custom CSS -->
 		{% block css %}{% endblock %}
 	</head>
 	<body>
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-			<a class="navbar-brand" href="{{ url_for('main.index') }}">Boredom Buster</a>
-			<div class="collapse navbar-collapse">
-				<ul class="navbar-nav mr-auto">
-					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
-					</li>
-					{% if current_user.is_authenticated %}
-					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('main.favorites') }}">Favorites</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('main.logout') }}">Logout</a>
-					</li>
-					{% else %}
-					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
-					</li>
-					{% endif %}
-				</ul>
+			<div class="container-fluid">
+				<a class="navbar-brand" href="{{ url_for('main.index') }}"
+					>Boredom Buster</a
+				>
+				<button
+					class="navbar-toggler"
+					type="button"
+					data-bs-toggle="collapse"
+					data-bs-target="#navbarNav"
+					aria-controls="navbarNav"
+					aria-expanded="false"
+					aria-label="Toggle navigation"
+				>
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('main.index') }}"><i class="bi bi-house"></i> Home</a>
+						</li>
+						{% if current_user.is_authenticated %}
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('main.favorites') }}"
+								><i class="bi bi-heart"></i> Favorites</a
+							>
+						</li>
+						{% endif %}
+					</ul>
+					<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+						{% if current_user.is_authenticated %}
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('main.logout') }}"><i class="bi bi-box-arrow-in-left"></i> Logout</a>
+						</li>
+						{% else %}
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('main.login') }}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="{{ url_for('main.register') }}"
+								><i class="bi bi-person-plus"></i> Register</a
+							>
+						</li>
+						{% endif %}
+					</ul>
+				</div>
 			</div>
 		</nav>
-		<div class="container">{% block content %}{% endblock %}</div>
+		<div class="container my-4">{% block content %}{% endblock %}</div>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<!-- Bootstrap core JS-->
 		{{ bootstrap.load_js() }}
+		<!-- Custom JS -->
 		{% block scripts %}{% endblock %}
 	</body>
 </html>
