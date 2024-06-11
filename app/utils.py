@@ -1,9 +1,39 @@
 import aiohttp
 import asyncio
 import os
+import random
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.probability import FreqDist
 
 # Ensure you have your Unsplash access key stored in an environment variable
 UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
+
+# Download necessary NLTK data files
+nltk.download('punkt')
+nltk.download('stopwords')
+
+
+def extract_keywords(activity):
+    """
+    Extract meaningful keywords from the activity description.
+
+    Args:
+        activity (str): The activity description.
+
+    Returns:
+        str: A space-separated string of keywords.
+    """
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(activity)
+    filtered_words = [
+        word for word in words if word.isalnum() and word.lower() not in stop_words
+    ]
+    frequency_distribution = FreqDist(filtered_words)
+    keywords = frequency_distribution.most_common(3)  # Get the 3 most common words
+    keyword_string = ' '.join([keyword[0] for keyword in keywords])
+    return keyword_string
 
 
 async def fetch_activity(session, type=None, participants=None):
@@ -18,7 +48,7 @@ async def fetch_activity(session, type=None, participants=None):
     Returns:
         dict: The JSON response from the API containing the activity details.
     """
-    url = 'http://www.boredapi.com/api/activity/'
+    url = 'https://bored-api.appbrewery.com/filter/'
     params = {}
     if type:
         params['type'] = type
@@ -51,6 +81,19 @@ async def fetch_unsplash_image(session, query):
         return None
 
 
+def pick_random_activity(activities):
+    """
+    Pick a random activity object from a JSON containing a bunch of activities.
+
+    Args:
+        activities (list): The list of activity objects.
+
+    Returns:
+        dict: The randomly picked activity object.
+    """
+    return random.choice(activities)
+
+
 async def fetch_activity_and_image(session, type=None, participants=None):
     """
     Asynchronously fetch an activity and its related image.
@@ -64,10 +107,12 @@ async def fetch_activity_and_image(session, type=None, participants=None):
         dict: The combined response containing activity and image details.
     """
     activity = await fetch_activity(session, type, participants)
-    image_url = await fetch_unsplash_image(session, activity['activity'])
+    random_activity = pick_random_activity(activity)
+    keywords = extract_keywords(random_activity['activity'])
+    image_url = await fetch_unsplash_image(session, keywords)
     return {
-        'activity': activity,
-        'image_url': image_url  # Only return the small image URL
+        'activity': random_activity,
+        'image_url': image_url,  # Only return the small image URL
     }
 
 
